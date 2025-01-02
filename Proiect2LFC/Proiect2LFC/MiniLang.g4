@@ -12,7 +12,7 @@ statement:
 	| RETURN expression? SEMICOLON														# returnStmt;
 
 declaration:
-	CONST? type VARIABLE_NAME (EQUALS expression)? SEMICOLON; // Declarare de variabile
+	CONST? type VARIABLE_NAME (EQUALS expression)? SEMICOLON # varDeclaration;
 
 type:
 	INT_TYPE

@@ -1,4 +1,4 @@
-// Generated from c:/Users/Sergiu/Desktop/proiect2LFC/proiect2LFC/MiniLang.g4 by ANTLR 4.13.1
+// Generated from d:/facultate/anul2/anul2sem1/LFC/proiect2v3/Proiect2LFC/Proiect2LFC/MiniLang.g4 by ANTLR 4.13.1
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
@@ -167,18 +167,6 @@ public class MiniLangBaseListener implements MiniLangListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitStringAtomExp(MiniLangParser.StringAtomExpContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterPowerExp(MiniLangParser.PowerExpContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitPowerExp(MiniLangParser.PowerExpContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

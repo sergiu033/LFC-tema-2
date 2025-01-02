@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// Generated from c:/Users/Sergiu/Desktop/Proiect2LFC/Proiect2LFC/MiniLang.g4 by ANTLR 4.13.1
+// Generated from d:/facultate/anul2/anul2sem1/LFC/proiect2v3/Proiect2LFC/Proiect2LFC/MiniLang.g4 by ANTLR 4.13.1
 
 // Unreachable code detected
 #pragma warning disable 0162
@@ -452,6 +452,18 @@ public partial class MiniLangParser : Parser {
 	}
 
 	public partial class DeclarationContext : ParserRuleContext {
+		public DeclarationContext(ParserRuleContext parent, int invokingState)
+			: base(parent, invokingState)
+		{
+		}
+		public override int RuleIndex { get { return RULE_declaration; } }
+	 
+		public DeclarationContext() { }
+		public virtual void CopyFrom(DeclarationContext context) {
+			base.CopyFrom(context);
+		}
+	}
+	public partial class VarDeclarationContext : DeclarationContext {
 		[System.Diagnostics.DebuggerNonUserCode] public TypeContext type() {
 			return GetRuleContext<TypeContext>(0);
 		}
@@ -462,15 +474,11 @@ public partial class MiniLangParser : Parser {
 		[System.Diagnostics.DebuggerNonUserCode] public ExpressionContext expression() {
 			return GetRuleContext<ExpressionContext>(0);
 		}
-		public DeclarationContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_declaration; } }
+		public VarDeclarationContext(DeclarationContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
 			IMiniLangVisitor<TResult> typedVisitor = visitor as IMiniLangVisitor<TResult>;
-			if (typedVisitor != null) return typedVisitor.VisitDeclaration(this);
+			if (typedVisitor != null) return typedVisitor.VisitVarDeclaration(this);
 			else return visitor.VisitChildren(this);
 		}
 	}
@@ -481,6 +489,7 @@ public partial class MiniLangParser : Parser {
 		EnterRule(_localctx, 4, RULE_declaration);
 		int _la;
 		try {
+			_localctx = new VarDeclarationContext(_localctx);
 			EnterOuterAlt(_localctx, 1);
 			{
 			State = 67;

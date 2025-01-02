@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// Generated from c:/Users/Sergiu/Desktop/Proiect2LFC/Proiect2LFC/MiniLang.g4 by ANTLR 4.13.1
+// Generated from d:/facultate/anul2/anul2sem1/LFC/proiect2v3/Proiect2LFC/Proiect2LFC/MiniLang.g4 by ANTLR 4.13.1
 
 // Unreachable code detected
 #pragma warning disable 0162
@@ -87,11 +87,12 @@ public interface IMiniLangVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitReturnStmt([NotNull] MiniLangParser.ReturnStmtContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="MiniLangParser.declaration"/>.
+	/// Visit a parse tree produced by the <c>varDeclaration</c>
+	/// labeled alternative in <see cref="MiniLangParser.declaration"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitDeclaration([NotNull] MiniLangParser.DeclarationContext context);
+	Result VisitVarDeclaration([NotNull] MiniLangParser.VarDeclarationContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="MiniLangParser.type"/>.
 	/// </summary>

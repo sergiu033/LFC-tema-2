@@ -1,4 +1,4 @@
-// Generated from c:/Users/Sergiu/Desktop/proiect2LFC/proiect2LFC/MiniLang.g4 by ANTLR 4.13.1
+// Generated from d:/facultate/anul2/anul2sem1/LFC/proiect2v3/Proiect2LFC/Proiect2LFC/MiniLang.g4 by ANTLR 4.13.1
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
 /**
@@ -154,18 +154,6 @@ public interface MiniLangListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitStringAtomExp(MiniLangParser.StringAtomExpContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code powerExp}
-	 * labeled alternative in {@link MiniLangParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterPowerExp(MiniLangParser.PowerExpContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code powerExp}
-	 * labeled alternative in {@link MiniLangParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitPowerExp(MiniLangParser.PowerExpContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code functionCallExp}
 	 * labeled alternative in {@link MiniLangParser#expression}.
