@@ -26,16 +26,15 @@ class Program
             CommonTokenStream tokenStream = new(lexer);
             MiniLangParser parser = new(tokenStream);
 
-            SaveTokens(lexer, outputFilePath);
-
-            AnalyzeTokens(outputFilePath, outputFileGlobals, outputFileFunctions, outputFileLocals
-                , outputFileControlStructures, outputFileErrors, outputCombinedFilesFunctions);
-
             MiniLangParser.ProgramContext context = parser.program();
             MiniLangBaseVisitor<string> baseVisitor = new MiniLangBaseVisitor<string>();
             var result = baseVisitor.Visit(context);
 
-            Console.WriteLine($"Tokenizarea si analiza s-au incheiat cu succes.");
+            SaveTokens(lexer,tokenStream, outputFilePath);
+            AnalyzeTokens(outputFilePath, outputFileGlobals, outputFileFunctions, outputFileLocals
+                , outputFileControlStructures, outputFileErrors, outputCombinedFilesFunctions);
+
+            Console.WriteLine("Tokenizarea si analiza s-au incheiat cu succes.");
         }
         catch (Exception e)
         {
@@ -43,12 +42,16 @@ class Program
         }
     }
 
-    static void SaveTokens(MiniLangLexer lexer, string outputPath)
+    static void SaveTokens(MiniLangLexer lexer, CommonTokenStream tokenStream, string outputPath)
     {
-        using StreamWriter writer = new(outputPath);
-        foreach (var token in lexer.GetAllTokens())
+        using StreamWriter writer = new StreamWriter(outputPath);
         {
-            writer.WriteLine($"<{lexer.Vocabulary.GetSymbolicName(token.Type)} , {token.Text} , {token.Line}>");
+            tokenStream.Fill();
+            foreach (var token in tokenStream.GetTokens())
+            {
+
+                writer.WriteLine($"<{lexer.Vocabulary.GetSymbolicName(token.Type)} , {token.Text} , {token.Line}>");
+            }
         }
     }
 

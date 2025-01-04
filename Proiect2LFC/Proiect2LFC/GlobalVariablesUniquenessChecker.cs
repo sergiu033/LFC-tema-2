@@ -50,7 +50,6 @@ namespace Proiect2LFC
                 else
                 {
                     globalVariables.Add(variableName);
-
                 }
             }
             else
