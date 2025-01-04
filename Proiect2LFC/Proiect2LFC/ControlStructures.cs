@@ -10,7 +10,6 @@ namespace Proiect2LFC
     internal class ControlStructures
     {
         public List<string> structures { get; private set; } = new();
-
         public void AnalyzeTokensForLocals(string[] lines)
         {
             Regex tokenRegex = new Regex(@"<([^,]+),\s*(.+),\s*(\d+)>");
@@ -27,7 +26,7 @@ namespace Proiect2LFC
                 string lexeme = match.Groups[2].Value.Trim();
                 int lineNumber = int.Parse(match.Groups[3].Value.Trim());
 
-                if (tokenType == "IF" || tokenType=="ELSE"|| tokenType == "FOR" || tokenType=="WHILE")
+                if (tokenType == "IF" || tokenType=="ELSE" || tokenType == "FOR" || tokenType=="WHILE")
                 {
                     structures.Add($"<{tokenType},{lineNumber}>");
                 }

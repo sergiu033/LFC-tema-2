@@ -11,27 +11,31 @@ namespace Proiect2LFC
     {
         public List<string> Locals { get; private set; } = new();
 
+        private Dictionary<string, string> TypeMappings = new()
+    {
+        { "INT_TYPE", "int" },
+        { "FLOAT_TYPE", "float" },
+        { "DOUBLE_TYPE", "double" },
+        { "STRING_TYPE", "string" }
+    };
+
         public void AnalyzeTokensForLocals(string[] lines)
         {
-            int blockDepth = 0; // Adâncimea blocurilor
+            int blockDepth = 0;
             bool insideFunction = false;
             Regex tokenRegex = new Regex(@"<([^,]+),\s*(.+),\s*(\d+)>");
 
             string lastToken = "";
-            string functionName = ""; // Numele funcției
+            string functionName = "";
 
-            // Variabile pentru parametri
-            string possibleParameterType = ""; // Păstrăm tipul pentru un posibil parametru
-            string possibleParameterName = ""; // Păstrăm numele parametrului
-            string possibleLocalType = ""; // Păstrăm tipul pentru o posibilă variabilă locală
-            string possibleLocalName = ""; // Păstrăm numele variabilei locale
-            string initializationValue = ""; // Păstrăm valoarea de inițializare, dacă există
+            string possibleParameterType = "";
+            string possibleParameterName = "";
+            string possibleLocalType = "";
+            string possibleLocalName = "";
+            string initializationValue = "";
 
-            // Lista de parametri și variabile
+            bool isParameter = false;
 
-            bool isParameter=false;
-
-            // 1. În primul rând, analizați parametrii funcției
             foreach (string line in lines)
             {
                 Match match = tokenRegex.Match(line);
@@ -53,13 +57,13 @@ namespace Proiect2LFC
                 {
                     isParameter = false;
                 }
-                // Gestionăm adâncimea blocurilor
+
                 if (tokenType == "LBRACE")
                 {
                     blockDepth++;
                     if (blockDepth == 1 && functionName != "")
                     {
-                        insideFunction = true; // Intrăm într-o funcție când întâlnim { și avem un nume de funcție
+                        insideFunction = true;
                     }
                 }
                 else if (tokenType == "RBRACE")
@@ -70,33 +74,26 @@ namespace Proiect2LFC
                         insideFunction = false;
                     }
                 }
-
-                // Detectăm declarațiile de funcții
                 if (tokenType == "FUNCTION_NAME" && blockDepth == 0)
-                {
-                    functionName = lexeme; // Setăm numele funcției când îl întâlnim
+                {   
+                    functionName = lexeme;
                 }
-
-                // Verificăm dacă ultimul token a fost un tip de variabilă și cel curent este un nume de variabilă (parametru)
-                else if ((lastToken == "INT_TYPE" || lastToken == "FLOAT_TYPE" || lastToken == "DOUBLE_TYPE" || lastToken == "STRING_TYPE")
-                    && tokenType == "VARIABLE_NAME" && !insideFunction && isParameter==true)
+                else if (TypeMappings.ContainsKey(lastToken) && tokenType == "VARIABLE_NAME" && !insideFunction && isParameter)
                 {
-                    // Parametru funcție
-                    possibleParameterType = lastToken;
+                    possibleParameterType = TypeMappings[lastToken];
                     possibleParameterName = lexeme;
+
                     Locals.Add($"{possibleParameterType} {possibleParameterName} (Parameter in Function {functionName} at Line {lineNumber})");
 
-                    // Resetăm variabilele pentru următorul parametru
                     possibleParameterType = "";
                     possibleParameterName = "";
                 }
-                // Setăm lastToken pentru următoarele verificări
+
                 lastToken = tokenType;
             }
 
-            // 2. În al doilea rând, analizați variabilele locale
-            blockDepth = 0; // Resetăm adâncimea blocurilor pentru a analiza variabilele locale
-            insideFunction = false; // Resetăm pentru a analiza variabilele locale din interiorul funcției
+            blockDepth = 0;
+            insideFunction = false;
 
             foreach (string line in lines)
             {
@@ -111,49 +108,46 @@ namespace Proiect2LFC
                 string lexeme = match.Groups[2].Value.Trim();
                 int lineNumber = int.Parse(match.Groups[3].Value.Trim());
 
-                // Gestionăm adâncimea blocurilor
+                if (tokenType == "FUNCTION_NAME" && blockDepth == 0)
+                {
+                    functionName = lexeme; 
+                }
+
                 if (tokenType == "LBRACE")
                 {
                     blockDepth++;
-                    if (blockDepth == 1 && functionName != "")
+                    if (blockDepth == 1 && !string.IsNullOrEmpty(functionName))
                     {
-                        insideFunction = true; // Intrăm într-o funcție când întâlnim { și avem un nume de funcție
+                        insideFunction = true;
                     }
                 }
+
                 else if (tokenType == "RBRACE")
                 {
                     blockDepth--;
                     if (blockDepth == 0)
                     {
                         insideFunction = false;
+                        functionName = "";
                     }
                 }
-
-                // Detectăm variabile locale (după ce am detectat tipul)
-                else if ((lastToken == "INT_TYPE" || lastToken == "FLOAT_TYPE" || lastToken == "DOUBLE_TYPE" || lastToken == "STRING_TYPE")
-                    && tokenType == "VARIABLE_NAME" && insideFunction)
+                else if (TypeMappings.ContainsKey(lastToken) && tokenType == "VARIABLE_NAME" && insideFunction)
                 {
-                    // Variabilă locală
-                    possibleLocalType = lastToken;
+                    possibleLocalType = TypeMappings[lastToken];
                     possibleLocalName = lexeme;
-                    initializationValue = ""; // Resetăm valoarea de inițializare
+                    initializationValue = "";
                 }
-
-                // Detectăm valoarea de inițializare pentru variabilele locale
                 else if (tokenType == "EQUALS" && !string.IsNullOrEmpty(possibleLocalName))
                 {
-                    initializationValue = ""; // Resetăm valoarea de inițializare
+                    initializationValue = "";
                 }
                 else if (!string.IsNullOrEmpty(possibleLocalName) && (tokenType == "NUMBER" || tokenType == "STRING"))
                 {
-                    initializationValue = lexeme; // Salvăm valoarea de inițializare
+                    initializationValue = lexeme;
                 }
-
-                // Finalizăm declarația variabilei locale
                 else if (tokenType == "SEMICOLON" && !string.IsNullOrEmpty(possibleLocalName) && insideFunction)
                 {
-                    // Adăugăm variabila locală în lista Locals
-                    string localEntry = $"{possibleLocalType} {possibleLocalName} (Local Variable at Line {lineNumber})";
+                    string localEntry = $"{possibleLocalType} {possibleLocalName} (Local Variable in Function {functionName} at Line {lineNumber})";
 
                     if (!string.IsNullOrEmpty(initializationValue))
                     {
@@ -162,23 +156,18 @@ namespace Proiect2LFC
 
                     Locals.Add(localEntry);
 
-                    // Resetăm variabilele pentru a analiza următoarea variabilă
                     possibleLocalType = "";
                     possibleLocalName = "";
                     initializationValue = "";
                 }
 
-                // Setăm lastToken pentru următoarele verificări
                 lastToken = tokenType;
             }
 
-            // Afișăm rezultatele
-            
         }
-
         public void WriteLocalsToFile(string globalsPath)
         {
-            File.WriteAllLines(globalsPath,Locals);
+            File.WriteAllLines(globalsPath, Locals);
         }
     }
 }

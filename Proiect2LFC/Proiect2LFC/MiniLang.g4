@@ -1,18 +1,73 @@
 grammar MiniLang;
 
-program: statement* EOF;
+program: (funcDecl | globalVar)* EOF;
 
-statement:
-	declaration																			# declarationStmt
-	| expression SEMICOLON																# expressionStmt
-	| IF LPAREN expression RPAREN block													# ifStmt
-	| IF LPAREN expression RPAREN block ELSE block										# ifElseStmt
-	| FOR LPAREN expression? SEMICOLON expression? SEMICOLON expression? RPAREN block	# forStmt
-	| WHILE LPAREN expression RPAREN block												# whileStmt
-	| RETURN expression? SEMICOLON														# returnStmt;
+funcDecl:
+	type FUNCTION_NAME (
+		type VARIABLE_NAME (COMMA type VARIABLE_NAME)*
+	)? RPAREN block;
+
+globalVar:
+	type VARIABLE_NAME (EQUALS (VARIABLE_NAME | NUMBER | STRING))? SEMICOLON;
+
+codeline:
+	forLoop
+	| whileLoop
+	| ifStatement
+	| ifElseStatement
+	| attribution SEMICOLON
+	| declaration
+	| functionCallWithReturn
+	| functionCallWithoutReturn;
+
+forLoop:
+	FOR type? VARIABLE_NAME (
+		EQUALS (VARIABLE_NAME | STRING | NUMBER)
+	)? SEMICOLON expression SEMICOLON attribution RPAREN block;
+
+whileLoop: WHILE expression RPAREN block;
+
+ifElseStatement: IF expression RPAREN block ELSE block;
+
+ifStatement: IF expression RPAREN block;
+
+functionCallWithReturn:
+	RETURN ((functionCallWithoutReturn) | (attribution))? SEMICOLON;
+
+functionCallWithoutReturn:
+	FUNCTION_NAME (
+		(VARIABLE_NAME | NUMBER | STRING) (
+			COMMA (VARIABLE_NAME | NUMBER | STRING)
+		)*
+	)? RPAREN;
 
 declaration:
-	CONST? type VARIABLE_NAME (EQUALS expression)? SEMICOLON # varDeclaration;
+	CONST? type VARIABLE_NAME (
+		(
+			EQUALS
+			| PLUS_EQUALS
+			| MINUS_EQUALS
+			| MUL_EQUALS
+			| MOD_EQUALS
+			| DIV_EQUALS
+		) attribution
+	)? SEMICOLON # varDeclaration;
+
+attribution:
+	type? VARIABLE_NAME (
+		EQUALS
+		| PLUS_EQUALS
+		| MINUS_EQUALS
+		| MUL_EQUALS
+		| MOD_EQUALS
+	) attribution
+	| attribution (PLUS | MINUS | ASTERISK | SLASH | MODULO) attribution
+	| (INCREMENT | DECREMENT) attribution
+	| attribution (INCREMENT | DECREMENT)
+	| functionCallWithoutReturn
+	| STRING
+	| NUMBER
+	| VARIABLE_NAME;
 
 type:
 	INT_TYPE
@@ -21,20 +76,17 @@ type:
 	| STRING_TYPE
 	| VOID_TYPE;
 
-block: LBRACE statement* RBRACE;
+block: LBRACE (codeline)* RBRACE;
 
 expression:
-	LPAREN expression RPAREN									# parenthesisExp
-	| expression (ASTERISK | SLASH | MODULO) expression			# mulDivExp
-	| expression (PLUS | MINUS) expression						# addSubExp
-	| expression (LT | GT | LTE | GTE | EQ | NEQ) expression	# relationalExp
-	| expression (AND | OR) expression							# logicalExp
-	| NOT expression											# notExp
-	| VARIABLE_NAME (INCREMENT | DECREMENT)?					# incrementDecrementExp
-	| VARIABLE_NAME EQUALS expression							# assignmentExp
-	| FUNCTION_NAME (expression (COMMA expression)*)? RPAREN	# functionCallExp
-	| NUMBER													# numericAtomExp
-	| STRING													# stringAtomExp;
+	expression (AND | OR | NOT | LTE | GTE | LT | GT | EQ | NEQ) expression	# relationalExp
+	| expression (AND | OR) expression										# logicalExp
+	| NOT expression														# notExp
+	| VARIABLE_NAME (INCREMENT | DECREMENT)									# incrementDecrementExp
+	| (INCREMENT | DECREMENT) VARIABLE_NAME									# preincrdecrexp
+	| NUMBER																# numericAtomExp
+	| STRING																# stringAtomExp
+	| VARIABLE_NAME															# varName;
 
 // Lexer rules
 
@@ -46,41 +98,33 @@ DOUBLE_TYPE: 'double';
 STRING_TYPE: 'string';
 VOID_TYPE: 'void';
 
-IF: 'if';
+IF: 'if' WS* LPAREN;
 ELSE: 'else';
-FOR: 'for';
-WHILE: 'while';
+FOR: 'for' WS* LPAREN;
+WHILE: 'while' WS* LPAREN;
 RETURN: 'return';
+
+// Functii
+FUNCTION_NAME: [a-zA-Z_][a-zA-Z0-9_]* WS* '(';
 
 // Variabile
 VARIABLE_NAME: [a-zA-Z_][a-zA-Z0-9_]*;
-
-// Functii
-FUNCTION_NAME: [a-zA-Z_][a-zA-Z0-9_]* '(';
 
 // Constante numerice i literali
 NUMBER: [0-9]+ ('.' [0-9]+)?;
 STRING: '"' .*? '"';
 
-// Operatorii aritmetici
-PLUS: '+';
-MINUS: '-';
-ASTERISK: '*';
-SLASH: '/';
-MODULO: '%';
-
 // Operatorii relaionali
-LT: '<';
-GT: '>';
 LTE: '<=';
 GTE: '>=';
+LT: '<';
+GT: '>';
 EQ: '==';
 NEQ: '!=';
 
-// Operatorii logici
-AND: '&&';
-OR: '||';
-NOT: '!';
+// Operatorii de incrementare/decrementare
+INCREMENT: '++';
+DECREMENT: '--';
 
 // Operatorii de atribuire
 EQUALS: '=';
@@ -90,9 +134,17 @@ MUL_EQUALS: '*=';
 DIV_EQUALS: '/=';
 MOD_EQUALS: '%=';
 
-// Operatorii de incrementare/decrementare
-INCREMENT: '++';
-DECREMENT: '--';
+// Operatorii aritmetici
+PLUS: '+';
+MINUS: '-';
+ASTERISK: '*';
+SLASH: '/';
+MODULO: '%';
+
+// Operatorii logici
+AND: '&&';
+OR: '||';
+NOT: '!';
 
 // Delimitatori
 LPAREN: '(';

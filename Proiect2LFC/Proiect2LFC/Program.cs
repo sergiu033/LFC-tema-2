@@ -8,66 +8,81 @@ class Program
 {
     static void Main(string[] args)
     {
-        string inputFilePath = "sourceCode.txt"; // Fișierul cu cod sursă
-        string outputFilePath = "tokens.txt";   // Fișierul pentru tokeni
-        string outputFileGloabls = "globals.txt";
+        string inputFilePath = "sourceCode.txt";
+        string outputFilePath = "tokens.txt"; 
+        string outputFileGlobals = "globals.txt";
         string outputFileFunctions = "functions.txt";
         string outputFileLocals = "locals.txt";
         string outputFileControlStructures="controlStructures.txt";
-        // Citim codul sursă
-        string sourceCode = File.ReadAllText(inputFilePath);
+        string outputFileErrors = "errors.txt";
+        string outputCombinedFilesFunctions = "functionsList.txt";
 
-        // Creăm un stream pentru input
-        AntlrInputStream inputStream = new(sourceCode);
+        try
+        {
+            string sourceCode = File.ReadAllText(inputFilePath);
 
-        // Inițializăm lexer-ul generat
-        MiniLangLexer lexer = new(inputStream);
+            AntlrInputStream inputStream = new(sourceCode);
+            MiniLangLexer lexer = new(inputStream);
+            CommonTokenStream tokenStream = new(lexer);
+            MiniLangParser parser = new(tokenStream);
 
-        // Creăm un token stream
-        CommonTokenStream tokenStream = new(lexer);
+            SaveTokens(lexer, outputFilePath);
 
-        // Inițializăm parser-ul generat
-        MiniLangParser parser = new(tokenStream);
+            AnalyzeTokens(outputFilePath, outputFileGlobals, outputFileFunctions, outputFileLocals
+                , outputFileControlStructures, outputFileErrors, outputCombinedFilesFunctions);
 
-        // Salvăm tokenii într-un fișier
-        SaveTokens(lexer, outputFilePath);
+            MiniLangParser.ProgramContext context = parser.program();
+            MiniLangBaseVisitor<string> baseVisitor = new MiniLangBaseVisitor<string>();
+            var result = baseVisitor.Visit(context);
 
-        AnalyzeTokens(outputFilePath,outputFileGloabls, outputFileFunctions,outputFileLocals, outputFileControlStructures);
-
-        Console.WriteLine($"Tokenizarea s-a încheiat. Rezultatul a fost salvat în {outputFilePath}");
+            Console.WriteLine($"Tokenizarea si analiza s-au incheiat cu succes.");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.ToString());
+        }
     }
 
     static void SaveTokens(MiniLangLexer lexer, string outputPath)
     {
         using StreamWriter writer = new(outputPath);
-
-        // Iterăm prin tokeni
         foreach (var token in lexer.GetAllTokens())
         {
             writer.WriteLine($"<{lexer.Vocabulary.GetSymbolicName(token.Type)} , {token.Text} , {token.Line}>");
-        } 
+        }
     }
 
-    static void AnalyzeTokens(string tokensFilePath, string globalsPath, string functionsPath,string outputFileLocals,string outputFileControlStructures)
+    static void AnalyzeTokens(string tokensFilePath, string globalsPath, string functionsPath,string outputFileLocals,
+        string outputFileControlStructures,string outputFileErrors,string outputCombinedFilesFunctions)
     {
         string[] lines = File.ReadAllLines(tokensFilePath);
 
-        // Creăm instanțele claselor
         GlobalVariables globalVariables = new();
         Functions functions = new();
         LocalVariables localVariables = new();
         ControlStructures controlStructures = new();
-
-        // Analizăm tokens pentru variabile globale și funcții
         globalVariables.AnalyzeTokensForGlobals(lines);
         functions.AnalyzeTokensForFunctions(lines);
         localVariables.AnalyzeTokensForLocals(lines);
-        controlStructures.AnalyzeTokensForLocals(lines); 
+        controlStructures.AnalyzeTokensForLocals(lines);
 
-        // Scriem rezultatele în fișiere
         globalVariables.WriteGlobalsToFile(globalsPath);
         functions.WriteFunctionsToFile(functionsPath);
         localVariables.WriteLocalsToFile(outputFileLocals);
         controlStructures.WriteStructuresToFile(outputFileControlStructures);
+
+        GlobalVariablesUniquenessChecker globalVarsChecker = new GlobalVariablesUniquenessChecker(globalsPath, outputFileErrors);
+        TypeCompatibility typeCompatibility = new TypeCompatibility(globalsPath, outputFileLocals, outputFileErrors);
+        FunctionsUniquenessChecker functionsUniquenessChecker=new FunctionsUniquenessChecker(functionsPath, outputFileErrors);
+
+        typeCompatibility.VerifyTypeCompatibility();
+        functionsUniquenessChecker.VerifyFunctionUniqueness();
+
+        LocalVariablesUniqueness localVariablesUniqueness = new LocalVariablesUniqueness(outputFileLocals, outputFileErrors);
+        LocalVariableConflictChecker localVariableConflictChecker = new LocalVariableConflictChecker(outputFileLocals, outputFileErrors);
+        FunctionCallValidator functionCallValidator = new FunctionCallValidator(functionsPath, tokensFilePath, outputFileErrors);
+
+        FunctionsInfo functionsInfo = new FunctionsInfo(functionsPath, outputFileLocals, outputFileControlStructures);
+        functionsInfo.GenerateCombinedFile(outputCombinedFilesFunctions);
     }
 }

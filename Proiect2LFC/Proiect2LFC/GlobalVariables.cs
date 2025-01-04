@@ -14,15 +14,15 @@ namespace Proiect2LFC
 
         public void AnalyzeTokensForGlobals(string[] lines)
         {
-            int blockDepth = 0; // Adâncimea blocurilor
+            int blockDepth = 0; 
             bool insideFunction = false;
             bool isParameter = false;
             Regex tokenRegex = new Regex(@"<([^,]+),\s*(.+),\s*(\d+)>");
 
             string lastToken = "";
-            string possibleGlobalType = ""; // Păstrăm tipul pentru o posibilă variabilă globală
-            string possibleGlobalName = ""; // Păstrăm numele variabilei globale
-            string initializationValue = ""; // Păstrăm valoarea de inițializare, dacă există
+            string possibleGlobalType = "";
+            string possibleGlobalName = "";
+            string initializationValue = "";
 
             foreach (string line in lines)
             {
@@ -37,7 +37,6 @@ namespace Proiect2LFC
                 string lexeme = match.Groups[2].Value.Trim();
                 int lineNumber = int.Parse(match.Groups[3].Value.Trim());
 
-                // Gestionăm adâncimea blocurilor
                 if (tokenType == "LBRACE")
                 {
                     blockDepth++;
@@ -52,36 +51,30 @@ namespace Proiect2LFC
                     if (blockDepth == 0) { insideFunction = false; isParameter = false; }
                 }
 
-                // Detectăm declarații de funcții
                 if (tokenType == "FUNCTION_NAME" && blockDepth == 0)
                 {
-                    // Adăugăm doar dacă urmează un corp de funcție sau declarație
                     isParameter = true;
                 }
-                // Detectăm tipuri pentru variabile globale
                 else if (tokenType == "INT_TYPE" || tokenType == "FLOAT_TYPE" || tokenType == "DOUBLE_TYPE" || tokenType == "STRING_TYPE")
                 {
                     if (blockDepth == 0 && !insideFunction)
                     {
-                        possibleGlobalType = lexeme; // Salvăm tipul pentru variabila globală
+                        possibleGlobalType = lexeme;
                     }
                 }
-                // Detectăm numele variabilei globale
                 else if (tokenType == "VARIABLE_NAME" && !string.IsNullOrEmpty(possibleGlobalType) && blockDepth == 0 && !insideFunction
                     && !isParameter)
                 {
-                    possibleGlobalName = lexeme; // Salvăm numele variabilei globale
+                    possibleGlobalName = lexeme;
                 }
-                // Detectăm valoarea de inițializare
                 else if (tokenType == "EQUALS" && !string.IsNullOrEmpty(possibleGlobalName))
                 {
-                    initializationValue = ""; // Resetăm valoarea de inițializare
+                    initializationValue = "";
                 }
                 else if (!string.IsNullOrEmpty(possibleGlobalName) && (tokenType == "NUMBER" || tokenType == "STRING"))
                 {
-                    initializationValue = lexeme; // Salvăm valoarea de inițializare
+                    initializationValue = lexeme;
                 }
-                // Finalizăm declarația variabilei globale
                 else if (tokenType == "SEMICOLON" && !string.IsNullOrEmpty(possibleGlobalName))
                 {
                     string globalEntry = $"{possibleGlobalType} {possibleGlobalName} (Global  Variable at Line {lineNumber})";
@@ -93,7 +86,6 @@ namespace Proiect2LFC
 
                     Globals.Add(globalEntry);
 
-                    // Resetăm variabilele
                     possibleGlobalType = "";
                     possibleGlobalName = "";
                     initializationValue = "";
